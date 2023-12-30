@@ -1,4 +1,5 @@
 from math import sqrt
+from copy import deepcopy
 
 def clamp(n, minV, maxV):
     return min(maxV, max(n, minV))
@@ -13,7 +14,7 @@ def pathfind(p_map, startX, startY, endX, endY, diagonal=False, p_maxIterations=
     selX = endX
     selY = endY
 
-    map = p_map.copy()
+    map = deepcopy(p_map)
 
     if not diagonal:
         moves = [[1, 0, "up"], [-1, 0, "down"], [0, 1, "left"], [0, -1, "right"]]
@@ -27,24 +28,23 @@ def pathfind(p_map, startX, startY, endX, endY, diagonal=False, p_maxIterations=
             mapValues[i].append({"path": "left", "f": 0, "g": 0, "h": 0, "explored": False})
 
     while iterations < maxIterations:
-        if selX == startX and (selY == startY):
+        if (selX == startX) and (selY == startY):
             break
 
         mapValues[selY][selX]["explored"] = True
-        map[selY][selX] = 2
 
         sel = mapValues[clamp(selY, 0, len(map) - 1)][clamp(selX, 0, len(map[selY]) - 1)]
-
         for i in moves:
             locationY = clamp(selY + i[0], 0, len(map) - 1)
             locationX = clamp(selX + i[1], 0, len(map[clamp(selY + i[0], 0, len(map) - 1)]) -1)
             selSearch = mapValues[locationY][locationX]
             if map[locationY][locationX] in empty and not selSearch["explored"]:
-                if (sel["g"] + 1 + distance(selX + i[1], selY + i[0], endX, endY)) < selSearch["f"] or (selSearch["f"] == 0):
-                    if i[0] and i[1]:
-                        selSearch["g"] = sel["g"] + 1.4
-                    else:
-                        selSearch["g"] = sel["g"] + 1
+                if i[0] and i[1]:
+                    cost = 1.4
+                else:
+                    cost = 1
+                if (sel["g"] + cost + distance(selX + i[1], selY + i[0], endX, endY)) < selSearch["f"] or (selSearch["f"] == 0):
+                    selSearch["g"] = sel["g"] + cost
                     selSearch["h"] = distance(selX + i[1], selY + i[0], endX, endY, diagonal)
                     selSearch["f"] = selSearch["g"] + selSearch["h"]
                     selSearch["path"] = i[2]
